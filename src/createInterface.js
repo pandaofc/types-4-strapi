@@ -1,12 +1,12 @@
 const fs = require('fs');
-const { pascalCase, isOptional } = require('./utils');
+const { pascalCase, isOptional, switchName } = require('./utils');
 
 module.exports = (schemaPath, interfaceName) => {
   var tsImports = [];
   var tsInterface = `\n`;
-  tsInterface += `export interface ${interfaceName} {\n`;
+  tsInterface += `export interface I${interfaceName} {\n`;
   tsInterface += `  id: number;\n`;
-  tsInterface += `  attributes: {\n`;
+  // tsInterface += `  attributes: {\n`;
   var schemaFile;
   var schema;
   try {
@@ -28,9 +28,10 @@ module.exports = (schemaPath, interfaceName) => {
     // -------------------------------------------------
     if (attributeValue.type === 'relation') {
       tsPropertyType = attributeValue.target.includes('::user')
-        ? 'User'
+        ? 'IUser'
         : `${pascalCase(attributeValue.target.split('.')[1])}`;
-      const tsImportPath = `./${tsPropertyType}`;
+      const tsImportPath = `./${switchName(tsPropertyType)}.interface`;
+      tsPropertyType = `I${tsPropertyType}`
       if (tsImports.every((x) => x.path !== tsImportPath))
         tsImports.push({
           type: tsPropertyType,
@@ -38,7 +39,7 @@ module.exports = (schemaPath, interfaceName) => {
         });
       const isArray = attributeValue.relation.endsWith('ToMany');
       const bracketsIfArray = isArray ? '[]' : '';
-      tsProperty = `    ${attributeName}: { data: ${tsPropertyType}${bracketsIfArray} };\n`;
+      tsProperty = `    ${attributeName}: ${tsPropertyType}${bracketsIfArray};\n`;
     }
     // -------------------------------------------------
     // Component
@@ -46,9 +47,10 @@ module.exports = (schemaPath, interfaceName) => {
     else if (attributeValue.type === 'component') {
       tsPropertyType =
         attributeValue.target === 'plugin::users-permissions.user'
-          ? 'User'
+          ? 'IUser'
           : pascalCase(attributeValue.component.split('.')[1]);
-      const tsImportPath = `./components/${tsPropertyType}`;
+      const tsImportPath = `./components/${switchName(tsPropertyType)}.interface`;
+      tsPropertyType = `I${tsPropertyType}`
       if (tsImports.every((x) => x.path !== tsImportPath))
         tsImports.push({
           type: tsPropertyType,
@@ -70,16 +72,16 @@ module.exports = (schemaPath, interfaceName) => {
     // Media
     // -------------------------------------------------
     else if (attributeValue.type === 'media') {
-      tsPropertyType = 'Media';
-      const tsImportPath = './Media';
+      tsPropertyType = 'IMedia';
+      const tsImportPath = './media.interface';
       if (tsImports.every((x) => x.path !== tsImportPath))
         tsImports.push({
           type: tsPropertyType,
           path: tsImportPath,
         });
-      tsProperty = `    ${attributeName}: { data: ${tsPropertyType}${
+      tsProperty = `    ${attributeName}: ${tsPropertyType}${
         attributeValue.multiple ? '[]' : ''
-      } };\n`;
+      };\n`;
     }
     // -------------------------------------------------
     // Enumeration
@@ -158,9 +160,9 @@ module.exports = (schemaPath, interfaceName) => {
   // -------------------------------------------------
   if (schema.pluginOptions?.i18n?.localized) {
     tsInterface += `    locale: string;\n`;
-    tsInterface += `    localizations?: { data: ${interfaceName}[] }\n`;
+    tsInterface += `    localizations?: { ${interfaceName}[] }\n`;
   }
-  tsInterface += `  }\n`;
+  // tsInterface += `  }\n`;
   tsInterface += '}\n';
   for (const tsImport of tsImports) {
     tsInterface =

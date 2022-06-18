@@ -3,7 +3,7 @@
 const fs = require('fs');
 const createInterface = require('./createInterface');
 const createComponentInterface = require('./createComponentInterface');
-const { pascalCase, isOptional } = require('./utils');
+const { pascalCase, isOptional, switchName } = require('./utils');
 
 const typesDir = 'types';
 
@@ -13,7 +13,7 @@ if (!fs.existsSync(typesDir)) fs.mkdirSync(typesDir);
 // Payload
 // --------------------------------------------
 
-const payloadTsInterface = `export interface Payload<T> {
+const payloadTsInterface = `export interface IPayload<T> {
   data: T;
   meta: {
     pagination?: {
@@ -26,33 +26,31 @@ const payloadTsInterface = `export interface Payload<T> {
 }
 `;
 
-fs.writeFileSync(`${typesDir}/Payload.ts`, payloadTsInterface);
+fs.writeFileSync(`${typesDir}/payload.interface.ts`, payloadTsInterface);
 
 // --------------------------------------------
 // User
 // --------------------------------------------
 
-const userTsInterface = `export interface User {
+const userTsInterface = `export interface IUser {
   id: number;
-  attributes: {
-    username: string;
-    email: string;
-    provider: string;
-    confirmed: boolean;
-    blocked: boolean;
-    createdAt: Date;
-    updatedAt: Date;
-  }
+  username: string;
+  email: string;
+  provider: string;
+  confirmed: boolean;
+  blocked: boolean;
+  createdAt: Date;
+  updatedAt: Date;
 }
 `;
 
-fs.writeFileSync(`${typesDir}/User.ts`, userTsInterface);
+fs.writeFileSync(`${typesDir}/user.interface.ts`, userTsInterface);
 
 // --------------------------------------------
 // MediaFormat
 // --------------------------------------------
 
-var mediaFormatTsInterface = `export interface MediaFormat {
+var mediaFormatTsInterface = `export interface IMediaFormat {
   name: string;
   hash: string;
   ext: string;
@@ -65,37 +63,35 @@ var mediaFormatTsInterface = `export interface MediaFormat {
 }
 `;
 
-fs.writeFileSync(`${typesDir}/MediaFormat.ts`, mediaFormatTsInterface);
+fs.writeFileSync(`${typesDir}/media-format.interface.ts`, mediaFormatTsInterface);
 
 // --------------------------------------------
 // Media
 // --------------------------------------------
 
-var mediaTsInterface = `import { MediaFormat } from './MediaFormat';
+var mediaTsInterface = `import { IMediaFormat } from './media-format.interface';
 
-export interface Media {
+export interface IMedia {
   id: number;
-  attributes: {
-    name: string;
-    alternativeText: string;
-    caption: string;
-    width: number;
-    height: number;
-    formats: { thumbnail: MediaFormat; medium: MediaFormat; small: MediaFormat; };
-    hash: string;
-    ext: string;
-    mime: string;
-    size: number;
-    url: string;
-    previewUrl: string;
-    provider: string;
-    createdAt: Date;
-    updatedAt: Date;
-  }
+  name: string;
+  alternativeText: string;
+  caption: string;
+  width: number;
+  height: number;
+  formats: { thumbnail: IMediaFormat; medium: IMediaFormat; small: IMediaFormat; };
+  hash: string;
+  ext: string;
+  mime: string;
+  size: number;
+  url: string;
+  previewUrl: string;
+  provider: string;
+  createdAt: Date;
+  updatedAt: Date;
 }
 `;
 
-fs.writeFileSync(`${typesDir}/Media.ts`, mediaTsInterface);
+fs.writeFileSync(`${typesDir}/media.interface.ts`, mediaTsInterface);
 
 // --------------------------------------------
 // API Types
@@ -115,8 +111,9 @@ if (apiFolders)
       `./src/api/${apiFolder}/content-types/${apiFolder}/schema.json`,
       interfaceName
     );
+    //${capitalizeFirstLetter(interfaceName).replace(/[A-Z]/g, m => "-" + m.toLowerCase())
     if (interface)
-      fs.writeFileSync(`${typesDir}/${interfaceName}.ts`, interface);
+      fs.writeFileSync(`${typesDir}/${switchName(interfaceName)}.interface.ts`, interface);
   }
 
 // --------------------------------------------
@@ -146,7 +143,7 @@ if (componentCategoryFolders) {
         interfaceName
       );
       if (interface)
-        fs.writeFileSync(`${targetFolder}/${interfaceName}.ts`, interface);
+        fs.writeFileSync(`${targetFolder}/${switchName(interfaceName)}.interface.ts`, interface);
     }
   }
 }

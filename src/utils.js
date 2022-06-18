@@ -15,3 +15,8 @@ module.exports.isOptional = (attributeValue) => {
   }
   return attributeValue.required !== true;
 };
+
+module.exports.switchName = (string) => {
+  const s = string.charAt(0).toLowerCase() + string.slice(1);
+  return s.replace(/[A-Z]/g, m => "-" + m.toLowerCase())
+}

@@ -1,10 +1,10 @@
 const fs = require('fs');
-const { pascalCase, isOptional } = require('./utils');
+const { pascalCase, isOptional, switchName } = require('./utils');
 
 module.exports = (schemaPath, interfaceName) => {
   var tsImports = [];
   var tsInterface = `\n`;
-  tsInterface += `export interface ${interfaceName} {\n`;
+  tsInterface += `export interface I${interfaceName} {\n`;
   tsInterface += `  id: number;\n`;
   var schemaFile;
   var schema;
@@ -27,9 +27,10 @@ module.exports = (schemaPath, interfaceName) => {
     // -------------------------------------------------
     if (attributeValue.type === 'relation') {
       tsType = attributeValue.target.includes('::user')
-        ? 'User'
+        ? 'IUser'
         : `${pascalCase(attributeValue.target.split('.')[1])}`;
-      const tsImportPath = `../${tsType}`;
+      const tsImportPath = `../${switchName(tsType)}`;
+      tsType = `I${tsType}`
       if (tsImports.every((x) => x.path !== tsImportPath))
         tsImports.push({
           type: tsType,
@@ -37,7 +38,7 @@ module.exports = (schemaPath, interfaceName) => {
         });
       const isArray = attributeValue.relation === 'oneToMany';
       const bracketsIfArray = isArray ? '[]' : '';
-      tsProperty = `  ${attributeName}: { data: ${tsType}${bracketsIfArray} };\n`;
+      tsProperty = `  ${attributeName}: ${tsType}${bracketsIfArray};\n`;
     }
     // -------------------------------------------------
     // Component
@@ -45,9 +46,10 @@ module.exports = (schemaPath, interfaceName) => {
     else if (attributeValue.type === 'component') {
       tsType =
         attributeValue.target === 'plugin::users-permissions.user'
-          ? 'User'
+          ? 'IUser'
           : pascalCase(attributeValue.component.split('.')[1]);
-      var tsImportPath = `./${tsType}`;
+      var tsImportPath = `./${switchName(tsType)}`;
+      tsType = `I${tsType}`
       if (tsImports.every((x) => x.path !== tsImportPath))
         tsImports.push({
           type: tsType,
@@ -61,16 +63,16 @@ module.exports = (schemaPath, interfaceName) => {
     // Media
     // -------------------------------------------------
     else if (attributeValue.type === 'media') {
-      tsType = 'Media';
-      const tsImportPath = '../Media';
+      tsType = 'IMedia';
+      const tsImportPath = '../media';
       if (tsImports.every((x) => x.path !== tsImportPath))
         tsImports.push({
           type: tsType,
           path: tsImportPath,
         });
-      tsProperty = `  ${attributeName}: { data: ${tsType}${
+      tsProperty = `  ${attributeName}: ${tsType}${
         attributeValue.multiple ? '[]' : ''
-      } };\n`;
+      };\n`;
     }
     // -------------------------------------------------
     // Enumeration
