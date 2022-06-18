@@ -71,7 +71,7 @@ fs.writeFileSync(`${typesDir}/media-format.interface.ts`, mediaFormatTsInterface
 
 var mediaTsInterface = `import { IMediaFormat } from './media-format.interface';
 
-export interface IMedia {
+export interface IStrapiMedia {
   id: number;
   name: string;
   alternativeText: string;

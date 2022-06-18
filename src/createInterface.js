@@ -72,7 +72,7 @@ module.exports = (schemaPath, interfaceName) => {
     // Media
     // -------------------------------------------------
     else if (attributeValue.type === 'media') {
-      tsPropertyType = 'IMedia';
+      tsPropertyType = 'IStrapiMedia';
       const tsImportPath = './media.interface';
       if (tsImports.every((x) => x.path !== tsImportPath))
         tsImports.push({

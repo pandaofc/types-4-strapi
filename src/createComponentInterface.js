@@ -30,7 +30,7 @@ module.exports = (schemaPath, interfaceName) => {
         ? 'IUser'
         : `${pascalCase(attributeValue.target.split('.')[1])}`;
       const tsImportPath = `../${switchName(tsType)}`;
-      tsType = `I${tsType}`
+      tsType = `I${tsType}`;
       if (tsImports.every((x) => x.path !== tsImportPath))
         tsImports.push({
           type: tsType,
@@ -49,7 +49,7 @@ module.exports = (schemaPath, interfaceName) => {
           ? 'IUser'
           : pascalCase(attributeValue.component.split('.')[1]);
       var tsImportPath = `./${switchName(tsType)}`;
-      tsType = `I${tsType}`
+      tsType = `I${tsType}`;
       if (tsImports.every((x) => x.path !== tsImportPath))
         tsImports.push({
           type: tsType,
@@ -63,7 +63,7 @@ module.exports = (schemaPath, interfaceName) => {
     // Media
     // -------------------------------------------------
     else if (attributeValue.type === 'media') {
-      tsType = 'IMedia';
+      tsType = 'IStrapiMedia';
       const tsImportPath = '../media';
       if (tsImports.every((x) => x.path !== tsImportPath))
         tsImports.push({
@@ -149,7 +149,11 @@ module.exports = (schemaPath, interfaceName) => {
   tsInterface += '}\n';
   for (const tsImport of tsImports) {
     tsInterface =
-      `import { ${tsImport.type} } from '${tsImport.path}';\n` + tsInterface;
+      `import { ${tsImport.type} } from '${
+        tsImport.path.includes('.interface')
+          ? tsImport.path
+          : `${tsImport.path}.interface`
+      }';\n` + tsInterface;
   }
   return tsInterface;
 };
